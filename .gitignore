@@ -1,6 +1,0 @@
-.env
-node_modules
-package.json
-package-lock.json
-playground-1.mongodb.js
-.vscode
