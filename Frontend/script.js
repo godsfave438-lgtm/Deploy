@@ -2,20 +2,17 @@ const API_URL = "https://deploy-4ooy.onrender.com";
 
 let token = localStorage.getItem("token");
 let editingId = null;
+let isLogin = true;
 
-// UI ELEMENTS
+// ELEMENTS
 const authBox = document.getElementById("authBox");
 const app = document.getElementById("app");
 
-const loginEmail = document.getElementById("loginEmail");
-const loginPassword = document.getElementById("loginPassword");
-const loginBtn = document.getElementById("loginBtn");
-const loginError = document.getElementById("loginError");
-
-const registerEmail = document.getElementById("registerEmail");
-const registerPassword = document.getElementById("registerPassword");
-const registerBtn = document.getElementById("registerBtn");
-const registerError = document.getElementById("registerError");
+const email = document.getElementById("email");
+const password = document.getElementById("password");
+const authBtn = document.getElementById("authBtn");
+const authToggle = document.getElementById("authToggle");
+const authError = document.getElementById("authError");
 
 const nameInput = document.getElementById("name");
 const list = document.getElementById("list");
@@ -30,68 +27,40 @@ function getHeaders() {
   };
 }
 
-// SWITCH TABS
-function showLogin() {
-  document.getElementById("loginBox").style.display = "flex";
-  document.getElementById("registerBox").style.display = "none";
-}
+// TOGGLE LOGIN / REGISTER
+authToggle.onclick = () => {
+  isLogin = !isLogin;
 
-function showRegister() {
-  document.getElementById("loginBox").style.display = "none";
-  document.getElementById("registerBox").style.display = "flex";
-}
+  authBtn.textContent = isLogin ? "Login" : "Register";
+  authToggle.textContent = isLogin
+    ? "Don't have an account? Register"
+    : "Already have an account? Login";
+};
 
-// REGISTER
-registerBtn.onclick = async () => {
-  registerError.textContent = "";
+// AUTH (LOGIN + REGISTER)
+authBtn.onclick = async () => {
+  authError.textContent = "";
 
-  const res = await fetch(`${API_URL}/auth/register`, {
+  const endpoint = isLogin ? "/auth/login" : "/auth/register";
+
+  const res = await fetch(`${API_URL}${endpoint}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      email: registerEmail.value,
-      password: registerPassword.value
+      email: email.value,
+      password: password.value
     })
   });
 
   const data = await res.json();
 
   if (!res.ok) {
-    registerError.textContent = data.error || "Register failed";
+    authError.textContent = data.error || "Error";
     return;
   }
 
-  alert("Account created! Please login.");
-  showLogin();
-};
-
-// LOGIN
-loginBtn.onclick = async () => {
-  loginError.textContent = "";
-
-  try {
-    const res = await fetch(`${API_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: loginEmail.value,
-        password: loginPassword.value
-      })
-    });
-
-    const data = await res.json();
-
-    // ❌ IMPORTANT FIX
-    if (!res.ok) {
-      loginError.textContent = data.error || "Login failed";
-      return;
-    }
-
-    if (!data.token) {
-      loginError.textContent = "No token received from server";
-      return;
-    }
-
+  // LOGIN SUCCESS
+  if (isLogin) {
     token = data.token;
     localStorage.setItem("token", token);
 
@@ -99,19 +68,12 @@ loginBtn.onclick = async () => {
     app.style.display = "block";
 
     fetchStudents();
-
-  } catch (err) {
-    loginError.textContent = "Server unreachable";
-    console.error(err);
+  } else {
+    alert("Account created! Please login.");
+    isLogin = true;
+    authBtn.textContent = "Login";
+    authToggle.textContent = "Don't have an account? Register";
   }
-
-  token = data.token;
-  localStorage.setItem("token", token);
-
-  authBox.style.display = "none";
-  app.style.display = "block";
-
-  fetchStudents();
 };
 
 // LOGOUT
@@ -131,13 +93,18 @@ function fetchStudents() {
       students.forEach(s => {
         const id = s._id || s.id;
         const li = document.createElement("li");
-        li.innerHTML = `${s.name} <button onclick="deleteStudent('${id}')">Delete</button>`;
+
+        li.innerHTML = `
+          ${s.name}
+          <button onclick="deleteStudent('${id}')">Delete</button>
+        `;
+
         list.appendChild(li);
       });
     });
 }
 
-// ADD
+// ADD STUDENT
 addBtn.onclick = () => {
   fetch(`${API_URL}/students`, {
     method: "POST",
@@ -149,7 +116,7 @@ addBtn.onclick = () => {
   });
 };
 
-// DELETE
+// DELETE STUDENT
 function deleteStudent(id) {
   fetch(`${API_URL}/students/${id}`, {
     method: "DELETE",

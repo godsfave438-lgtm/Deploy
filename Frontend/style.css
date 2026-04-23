@@ -13,7 +13,7 @@ body {
   padding: 20px;
   border-radius: 15px;
   width: 100%;
-  max-width: 600px;
+  max-width: 500px;
   box-shadow: 0 10px 20px rgba(0,0,0,0.1);
 }
 
@@ -21,54 +21,54 @@ h1, h3 {
   text-align: center;
 }
 
-.tabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.tabs button {
-  flex: 1;
-  padding: 10px;
-  cursor: pointer;
-}
-
-.card {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 input {
+  width: 100%;
   padding: 10px;
+  margin-bottom: 10px;
   border: 1px solid #ccc;
   border-radius: 8px;
 }
 
 button {
+  width: 100%;
   padding: 10px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  background: #2563eb;
+  margin-bottom: 10px;
   color: white;
+}
+
+.add { background: #2563eb; }
+.update { background: #16a34a; }
+.logout { background: #111827; }
+
+.card {
+  display: flex;
+  flex-direction: column;
 }
 
 .error {
   color: red;
   font-size: 12px;
+  text-align: center;
 }
 
-#list li {
+.link {
+  color: blue;
+  cursor: pointer;
+  text-align: center;
+  font-size: 14px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
   padding: 8px;
   border: 1px solid #ddd;
   margin-bottom: 5px;
   border-radius: 6px;
-}
-
-.endpoints {
-  background: #f9fafb;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 14px;
 }

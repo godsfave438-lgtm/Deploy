@@ -12,16 +12,28 @@
 
   <h1>🎓 Student Manager</h1>
 
-  <!-- LOGIN SECTION -->
-  <div id="loginBox" class="login-box">
+  <!-- AUTH SECTION -->
+  <div id="authBox" class="card">
+
+    <h3 id="authTitle">Register/Login</h3>
+
     <input type="text" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Password" />
-    <button id="loginBtn">Login</button>
-    <p id="loginError" class="error"></p>
+
+    <button id="authBtn">Login</button>
+
+    <p id="authToggle" class="link">
+      Don't have an account? Register
+    </p>
+
+    <p id="authError" class="error"></p>
+
   </div>
 
   <!-- APP SECTION -->
   <div id="app" style="display:none;">
+
+    <h3>Dashboard</h3>
 
     <div class="input-group">
       <input type="text" id="name" placeholder="Enter student name" />
@@ -31,7 +43,8 @@
 
     <button id="logoutBtn" class="logout">Logout</button>
 
-    <ul id="list" class="list"></ul>
+    <ul id="list"></ul>
+
   </div>
 
 </div>
