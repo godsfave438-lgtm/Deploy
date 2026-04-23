@@ -69,20 +69,40 @@ registerBtn.onclick = async () => {
 loginBtn.onclick = async () => {
   loginError.textContent = "";
 
-  const res = await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email: loginEmail.value,
-      password: loginPassword.value
-    })
-  });
+  try {
+    const res = await fetch(`${API_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: loginEmail.value,
+        password: loginPassword.value
+      })
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  if (!data.token) {
-    loginError.textContent = "Invalid login";
-    return;
+    // ❌ IMPORTANT FIX
+    if (!res.ok) {
+      loginError.textContent = data.error || "Login failed";
+      return;
+    }
+
+    if (!data.token) {
+      loginError.textContent = "No token received from server";
+      return;
+    }
+
+    token = data.token;
+    localStorage.setItem("token", token);
+
+    authBox.style.display = "none";
+    app.style.display = "block";
+
+    fetchStudents();
+
+  } catch (err) {
+    loginError.textContent = "Server unreachable";
+    console.error(err);
   }
 
   token = data.token;
