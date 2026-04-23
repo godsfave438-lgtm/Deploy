@@ -1,16 +1,21 @@
-// ⚙️ script.js (WITH AUTH)
 const API_URL = "https://deploy-4ooy.onrender.com";
 
 let token = localStorage.getItem("token");
 let editingId = null;
 
-const loginBox = document.getElementById("loginBox");
+// UI ELEMENTS
+const authBox = document.getElementById("authBox");
 const app = document.getElementById("app");
 
-const email = document.getElementById("email");
-const password = document.getElementById("password");
+const loginEmail = document.getElementById("loginEmail");
+const loginPassword = document.getElementById("loginPassword");
 const loginBtn = document.getElementById("loginBtn");
 const loginError = document.getElementById("loginError");
+
+const registerEmail = document.getElementById("registerEmail");
+const registerPassword = document.getElementById("registerPassword");
+const registerBtn = document.getElementById("registerBtn");
+const registerError = document.getElementById("registerError");
 
 const nameInput = document.getElementById("name");
 const list = document.getElementById("list");
@@ -25,44 +30,73 @@ function getHeaders() {
   };
 }
 
+// SWITCH TABS
+function showLogin() {
+  document.getElementById("loginBox").style.display = "flex";
+  document.getElementById("registerBox").style.display = "none";
+}
+
+function showRegister() {
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("registerBox").style.display = "flex";
+}
+
+// REGISTER
+registerBtn.onclick = async () => {
+  registerError.textContent = "";
+
+  const res = await fetch(`${API_URL}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: registerEmail.value,
+      password: registerPassword.value
+    })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    registerError.textContent = data.error || "Register failed";
+    return;
+  }
+
+  alert("Account created! Please login.");
+  showLogin();
+};
+
 // LOGIN
 loginBtn.onclick = async () => {
   loginError.textContent = "";
 
-  try {
-    const res = await fetch(`${API_URL}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: email.value,
-        password: password.value
-      })
-    });
+  const res = await fetch(`${API_URL}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: loginEmail.value,
+      password: loginPassword.value
+    })
+  });
 
-    const data = await res.json();
+  const data = await res.json();
 
-    if (!data.token) {
-      loginError.textContent = "Invalid login";
-      return;
-    }
-
-    token = data.token;
-    localStorage.setItem("token", token);
-
-    loginBox.style.display = "none";
-    app.style.display = "block";
-
-    fetchStudents();
-
-  } catch (err) {
-    loginError.textContent = "Server error";
+  if (!data.token) {
+    loginError.textContent = "Invalid login";
+    return;
   }
+
+  token = data.token;
+  localStorage.setItem("token", token);
+
+  authBox.style.display = "none";
+  app.style.display = "block";
+
+  fetchStudents();
 };
 
 // LOGOUT
 logoutBtn.onclick = () => {
   localStorage.removeItem("token");
-  token = null;
   location.reload();
 };
 
@@ -76,18 +110,8 @@ function fetchStudents() {
 
       students.forEach(s => {
         const id = s._id || s.id;
-
         const li = document.createElement("li");
-        li.className = "item";
-
-        li.innerHTML = `
-          <span>${s.name}</span>
-          <div class="actions">
-            <button class="edit" onclick='editStudent(${JSON.stringify(s)})'>Edit</button>
-            <button class="delete" onclick='deleteStudent("${id}")'>Delete</button>
-          </div>
-        `;
-
+        li.innerHTML = `${s.name} <button onclick="deleteStudent('${id}')">Delete</button>`;
         list.appendChild(li);
       });
     });
@@ -113,35 +137,9 @@ function deleteStudent(id) {
   }).then(() => fetchStudents());
 }
 
-// EDIT
-function editStudent(student) {
-  nameInput.value = student.name;
-  editingId = student._id || student.id;
-
-  addBtn.style.display = "none";
-  updateBtn.style.display = "block";
-}
-
-// UPDATE
-updateBtn.onclick = () => {
-  fetch(`${API_URL}/students/${editingId}`, {
-    method: "PATCH",
-    headers: getHeaders(),
-    body: JSON.stringify({ name: nameInput.value })
-  }).then(() => {
-    nameInput.value = "";
-    editingId = null;
-
-    addBtn.style.display = "block";
-    updateBtn.style.display = "none";
-
-    fetchStudents();
-  });
-};
-
-// AUTO LOGIN IF TOKEN EXISTS
+// AUTO LOGIN
 if (token) {
-  loginBox.style.display = "none";
+  authBox.style.display = "none";
   app.style.display = "block";
   fetchStudents();
 }

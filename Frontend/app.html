@@ -1,0 +1,75 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Manager</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="container">
+
+  <h1>🎓 Student Manager</h1>
+
+  <!-- AUTH SECTION -->
+  <div id="authBox">
+
+    <div class="tabs">
+      <button onclick="showLogin()">Login</button>
+      <button onclick="showRegister()">Register</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="loginBox" class="card">
+      <input type="text" id="loginEmail" placeholder="Email" />
+      <input type="password" id="loginPassword" placeholder="Password" />
+      <button id="loginBtn">Login</button>
+      <p id="loginError" class="error"></p>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="registerBox" class="card" style="display:none">
+      <input type="text" id="registerEmail" placeholder="Email" />
+      <input type="password" id="registerPassword" placeholder="Password" />
+      <button id="registerBtn">Register</button>
+      <p id="registerError" class="error"></p>
+    </div>
+
+  </div>
+
+  <!-- APP SECTION -->
+  <div id="app" style="display:none;">
+
+    <div class="input-group">
+      <input type="text" id="name" placeholder="Enter student name" />
+      <button id="addBtn">Add</button>
+      <button id="updateBtn" style="display:none">Update</button>
+    </div>
+
+    <button id="logoutBtn" class="logout">Logout</button>
+
+    <h3>Students</h3>
+    <ul id="list"></ul>
+
+    <h3>API Endpoints</h3>
+    <div class="endpoints">
+      <p>POST /auth/register</p>
+      <p>POST /auth/login</p>
+      <p>GET /students</p>
+      <p>GET /students/:id</p>
+      <p>POST /students</p>
+      <p>PUT /students/:id</p>
+      <p>PATCH /students/:id</p>
+      <p>DELETE /students/:id</p>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
+
