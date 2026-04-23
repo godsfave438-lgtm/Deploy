@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Manager</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="container">
+
+  <h1>🎓 Student Manager</h1>
+
+  <!-- LOGIN SECTION -->
+  <div id="loginBox" class="login-box">
+    <input type="text" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button id="loginBtn">Login</button>
+    <p id="loginError" class="error"></p>
+  </div>
+
+  <!-- APP SECTION -->
+  <div id="app" style="display:none;">
+
+    <div class="input-group">
+      <input type="text" id="name" placeholder="Enter student name" />
+      <button id="addBtn" class="add">Add</button>
+      <button id="updateBtn" class="update" style="display:none">Update</button>
+    </div>
+
+    <button id="logoutBtn" class="logout">Logout</button>
+
+    <ul id="list" class="list"></ul>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
