@@ -4,6 +4,8 @@ const app = express();
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const studentRoutes = require('./routes/studentRoutes');
+const cors = require("cors");
+app.use(cors());
 
 connectDB()
   .catch(err => console.log(err));
