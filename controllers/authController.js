@@ -90,6 +90,27 @@ const login = async (req, res) => {
   }
 };
 
+const resetPassword = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and new password required' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: 'Account not found' });
+
+    user.password = await bcrypt.hash(password, 10);
+    await user.save();
+
+    res.json({ message: 'Password reset' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 const me = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -100,4 +121,4 @@ const me = async (req, res) => {
   }
 };
 
-module.exports = { register, login, me };
+module.exports = { register, login, resetPassword, me };

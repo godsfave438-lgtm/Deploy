@@ -87,21 +87,28 @@ button {
 }
 
 .brand-mark {
-  display: inline-grid;
+  display: inline-flex;
   width: 42px;
   height: 42px;
-  place-items: center;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 42px;
+  overflow: hidden;
   border-radius: 8px;
-  color: white;
-  background: #2563eb;
-  font-weight: 800;
-  letter-spacing: 0;
+  background: white;
 }
 
 .auth-hero .brand-mark,
 .dashboard-brand .brand-mark {
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.18);
+}
+
+.brand-mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .eyebrow {
@@ -285,6 +292,11 @@ button:disabled {
 
 .text-btn:hover {
   background: var(--surface-soft);
+}
+
+.text-btn.subtle {
+  margin-top: 4px;
+  color: var(--muted);
 }
 
 .form-message {

@@ -4,7 +4,7 @@ const AUTH_URL = '/auth';
 let token = localStorage.getItem('token');
 let currentUser = JSON.parse(localStorage.getItem('user') || 'null');
 let editingId = null;
-let isLogin = true;
+let authMode = 'login';
 let allStudents = [];
 let currentPage = 1;
 const pageSize = 6;
@@ -17,12 +17,14 @@ const authSubtitle = document.getElementById('authSubtitle');
 const nameField = document.getElementById('nameField');
 const displayName = document.getElementById('displayName');
 const email = document.getElementById('email');
+const passwordLabel = document.getElementById('passwordLabel');
 const password = document.getElementById('password');
 const roleField = document.getElementById('roleField');
 const accessCodeField = document.getElementById('accessCodeField');
 const accessCode = document.getElementById('accessCode');
 const authBtn = document.getElementById('authBtn');
 const authToggle = document.getElementById('authToggle');
+const resetPasswordToggle = document.getElementById('resetPasswordToggle');
 const authError = document.getElementById('authError');
 
 const welcomeName = document.getElementById('welcomeName');
@@ -86,23 +88,32 @@ function requiresAccessCode(role) {
 }
 
 function updateAccessCodeVisibility() {
-  const shouldShow = !isLogin && requiresAccessCode(selectedRole());
+  const shouldShow = authMode === 'register' && requiresAccessCode(selectedRole());
   accessCodeField.classList.toggle('hidden', !shouldShow);
   accessCode.required = shouldShow;
   if (!shouldShow) accessCode.value = '';
 }
 
-function setAuthMode(loginMode) {
-  isLogin = loginMode;
-  authTitle.textContent = isLogin ? 'Welcome back' : 'Create your access';
+function setAuthMode(mode) {
+  authMode = mode;
+  const isLogin = authMode === 'login';
+  const isRegister = authMode === 'register';
+  const isReset = authMode === 'reset';
+
+  authTitle.textContent = isLogin ? 'Welcome back' : isReset ? 'Reset password' : 'Create your access';
   authSubtitle.textContent = isLogin
     ? 'Sign in with your campus account.'
-    : 'Choose the account type that matches your role.';
-  authBtn.textContent = isLogin ? 'Sign in' : 'Create account';
-  authToggle.textContent = isLogin ? 'Create a new account' : 'I already have an account';
-  nameField.classList.toggle('hidden', isLogin);
-  roleField.classList.toggle('hidden', isLogin);
+    : isReset
+      ? 'Enter your email and choose a new password.'
+      : 'Choose the account type that matches your role.';
+  authBtn.textContent = isLogin ? 'Sign in' : isReset ? 'Reset password' : 'Create account';
+  authToggle.textContent = isLogin ? 'Create a new account' : 'Back to sign in';
+  resetPasswordToggle?.classList.toggle('hidden', !isLogin);
+  nameField.classList.toggle('hidden', !isRegister);
+  roleField.classList.toggle('hidden', !isRegister);
   updateAccessCodeVisibility();
+  if (passwordLabel) passwordLabel.textContent = isReset ? 'New password' : 'Password';
+  password.placeholder = isReset ? 'Enter a new password' : 'Enter your password';
   password.autocomplete = isLogin ? 'current-password' : 'new-password';
   showMessage(authError);
 }
@@ -387,7 +398,8 @@ function logout() {
   showLogin();
 }
 
-authToggle.onclick = () => setAuthMode(!isLogin);
+authToggle.onclick = () => setAuthMode(authMode === 'login' ? 'register' : 'login');
+if (resetPasswordToggle) resetPasswordToggle.onclick = () => setAuthMode('reset');
 document.querySelectorAll('input[name="role"]').forEach((input) => {
   input.onchange = updateAccessCodeVisibility;
 });
@@ -404,13 +416,13 @@ authForm.onsubmit = async (event) => {
   event.preventDefault();
   showMessage(authError);
 
-  const endpoint = isLogin ? '/login' : '/register';
+  const endpoint = authMode === 'login' ? '/login' : authMode === 'reset' ? '/reset-password' : '/register';
   const body = {
     email: email.value.trim(),
     password: password.value
   };
 
-  if (!isLogin) {
+  if (authMode === 'register') {
     body.name = displayName.value.trim();
     body.role = selectedRole();
     if (requiresAccessCode(body.role)) {
@@ -425,15 +437,19 @@ authForm.onsubmit = async (event) => {
       body: JSON.stringify(body)
     });
 
-    if (isLogin) {
+    if (authMode === 'login') {
       token = data.token;
       currentUser = data.user;
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(currentUser));
       showDashboard();
       await getStudents();
+    } else if (authMode === 'reset') {
+      setAuthMode('login');
+      password.value = '';
+      showMessage(authError, 'Password reset. Sign in with your new password.');
     } else {
-      setAuthMode(true);
+      setAuthMode('login');
       password.value = '';
       showMessage(authError, 'Account created. Sign in to continue.');
     }
@@ -443,7 +459,7 @@ authForm.onsubmit = async (event) => {
 };
 
 (async function init() {
-  setAuthMode(true);
+  setAuthMode('login');
   if (!token) {
     showLogin();
     return;

@@ -10,8 +10,10 @@
   <main id="loginPage" class="auth-page">
     <section class="auth-hero" aria-label="Student Manager overview">
       <div class="brand-lockup">
-        <span class="brand-mark">SM</span>
-        <span>Student Manager</span>
+        <span class="brand-mark">
+          <img src="assets/student-portal-logo.png" alt="" />
+        </span>
+        <span>Portal</span>
       </div>
       <div>
         <p class="eyebrow">Campus records portal</p>
@@ -44,7 +46,7 @@
         </label>
 
         <label class="field">
-          <span>Password</span>
+          <span id="passwordLabel">Password</span>
           <input type="password" id="password" autocomplete="current-password" placeholder="Enter your password" required />
         </label>
 
@@ -67,13 +69,16 @@
       </form>
 
       <button id="authToggle" class="text-btn" type="button">Create a new account</button>
+      <button id="resetPasswordToggle" class="text-btn subtle" type="button">Reset password</button>
     </section>
   </main>
 
   <main id="dashboardPage" class="dashboard-shell hidden" hidden>
     <aside class="sidebar">
       <a class="brand-lockup dashboard-brand" href="/" aria-label="Student Manager dashboard">
-        <span class="brand-mark">SM</span>
+        <span class="brand-mark">
+          <img src="assets/student-portal-logo.png" alt="" />
+        </span>
         <span>Student Manager</span>
       </a>
 
