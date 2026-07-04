@@ -7,48 +7,171 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <main id="loginPage" class="auth-page">
+    <section class="auth-hero" aria-label="Student Manager overview">
+      <div class="brand-lockup">
+        <span class="brand-mark">SM</span>
+        <span>Student Manager</span>
+      </div>
+      <div>
+        <p class="eyebrow">Campus records portal</p>
+        <h1>Manage student records with the right access for every role.</h1>
+        <p class="lead">Admins, lecturers, and students get a focused workspace for profiles, courses, and directory updates.</p>
+      </div>
+      <div class="hero-points">
+        <span>Role-based access</span>
+        <span>Student profile control</span>
+        <span>Searchable directory</span>
+      </div>
+    </section>
 
-<div class="container">
+    <section class="auth-panel" aria-labelledby="authTitle">
+      <div class="panel-heading">
+        <p class="eyebrow">Secure access</p>
+        <h2 id="authTitle">Welcome back</h2>
+        <p id="authSubtitle">Sign in with your campus account.</p>
+      </div>
 
-  <h1>🎓 Student Manager</h1>
+      <form id="authForm" class="stacked-form">
+        <label id="nameField" class="field hidden">
+          <span>Full name</span>
+          <input type="text" id="displayName" autocomplete="name" placeholder="Dr. Ada Smith" />
+        </label>
 
-  <!-- AUTH SECTION -->
-  <div id="authBox" class="card">
+        <label class="field">
+          <span>Email address</span>
+          <input type="email" id="email" autocomplete="email" placeholder="name@school.edu" required />
+        </label>
 
-    <h3 id="authTitle">Register/Login</h3>
+        <label class="field">
+          <span>Password</span>
+          <input type="password" id="password" autocomplete="current-password" placeholder="Enter your password" required />
+        </label>
 
-    <input type="text" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
+        <div id="roleField" class="field hidden">
+          <span>Account type</span>
+          <div class="segmented-control" role="radiogroup" aria-label="Account type">
+            <label><input type="radio" name="role" value="student" checked /><span>Student</span></label>
+            <label><input type="radio" name="role" value="lecturer" /><span>Lecturer</span></label>
+            <label><input type="radio" name="role" value="admin" /><span>Admin</span></label>
+          </div>
+        </div>
 
-    <button id="authBtn">Login</button>
+        <label id="accessCodeField" class="field hidden">
+          <span>Access code</span>
+          <input type="password" id="accessCode" autocomplete="off" placeholder="Enter staff access code" />
+        </label>
 
-    <p id="authToggle" class="link">
-      Don't have an account? Register
-    </p>
+        <button id="authBtn" class="primary-btn" type="submit">Sign in</button>
+        <p id="authError" class="form-message" role="alert"></p>
+      </form>
 
-    <p id="authError" class="error"></p>
+      <button id="authToggle" class="text-btn" type="button">Create a new account</button>
+    </section>
+  </main>
 
-  </div>
+  <main id="dashboardPage" class="dashboard-shell hidden" hidden>
+    <aside class="sidebar">
+      <a class="brand-lockup dashboard-brand" href="/" aria-label="Student Manager dashboard">
+        <span class="brand-mark">SM</span>
+        <span>Student Manager</span>
+      </a>
 
-  <!-- APP SECTION -->
-  <div id="app" style="display:none;">
+      <div class="user-summary">
+        <p class="eyebrow">Signed in as</p>
+        <h2 id="welcomeName">Dashboard</h2>
+        <span id="roleBadge" class="role-badge">Role</span>
+      </div>
 
-    <h3>Dashboard</h3>
+      <nav class="nav-stack" aria-label="Dashboard sections">
+        <a href="#studentForm">Records</a>
+        <a href="#studentList">Directory</a>
+      </nav>
 
-    <div class="input-group">
-      <input type="text" id="name" placeholder="Enter student name" />
-      <button id="addBtn" class="add">Add</button>
-      <button id="updateBtn" class="update" style="display:none">Update</button>
-    </div>
+      <button id="logoutBtn" class="logout-btn" type="button">Sign out</button>
+    </aside>
 
-    <button id="logoutBtn" class="logout">Logout</button>
+    <section class="workspace">
+      <header class="topbar">
+        <div>
+          <p id="dashboardKicker" class="eyebrow">Records</p>
+          <h1 id="dashboardTitle">Student directory</h1>
+        </div>
+        <div class="stat-strip" aria-label="Dashboard stats">
+          <div>
+            <strong id="totalCount">0</strong>
+            <span id="totalLabel">Visible records</span>
+          </div>
+          <div>
+            <strong id="courseCount">0</strong>
+            <span>Courses tracked</span>
+          </div>
+        </div>
+      </header>
 
-    <ul id="list"></ul>
+      <section id="studentForm" class="panel form-panel">
+        <div class="panel-heading panel-heading-row">
+          <div>
+            <p class="eyebrow" id="formKicker">Add record</p>
+            <h2 id="formTitle">Create student</h2>
+          </div>
+          <button id="cancelBtn" class="ghost-btn small hidden" type="button">Cancel edit</button>
+        </div>
 
-  </div>
+        <form id="recordForm" class="student-form">
+          <label class="field">
+            <span>Student name</span>
+            <input type="text" id="name" placeholder="Student full name" required />
+          </label>
+          <label class="field">
+            <span>Email</span>
+            <input type="email" id="studentEmail" placeholder="student@school.edu" required />
+          </label>
+          <label class="field">
+            <span>Matric number</span>
+            <input type="text" id="matricNumber" placeholder="MAT-2026-001" required />
+          </label>
+          <label class="field field-wide">
+            <span>Courses</span>
+            <input type="text" id="courses" placeholder="Database Systems, Web Development" required />
+          </label>
+          <button id="saveBtn" class="primary-btn field-wide" type="submit">Save student</button>
+        </form>
+        <p id="studentError" class="form-message" role="alert"></p>
+      </section>
 
-</div>
+      <section id="studentList" class="panel list-panel">
+        <div class="list-toolbar">
+          <div>
+            <p class="eyebrow">Directory</p>
+            <h2 id="listTitle">Students you can access</h2>
+          </div>
+          <label class="search-field">
+            <span class="sr-only">Search students</span>
+            <input type="search" id="searchInput" placeholder="Search name, email, matric" />
+          </label>
+        </div>
 
-<script src="script.js"></script>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Matric</th>
+                <th>Courses</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="list"></tbody>
+          </table>
+        </div>
+        <div id="emptyState" class="empty-state hidden">No student records found.</div>
+        <div id="pagination" class="pagination" aria-label="Pagination"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
 </body>
 </html>
