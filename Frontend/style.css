@@ -271,6 +271,11 @@ input[readonly] {
   background: var(--primary-dark);
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
 .text-btn {
   width: 100%;
   margin-top: 16px;
@@ -495,6 +500,12 @@ th {
   color: var(--danger);
   background: #fef2f2;
   border-color: #fecaca;
+}
+
+.icon-btn.success {
+  color: var(--success);
+  background: #f0fdf4;
+  border-color: #bbf7d0;
 }
 
 .empty-state {

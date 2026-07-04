@@ -128,6 +128,16 @@ async function apiRequest(url, options = {}) {
   return data;
 }
 
+function studentProfileUpdateUsed() {
+  return currentUser?.role === 'student' && Boolean(allStudents[0]?.profileUpdateUsed);
+}
+
+function setStudentFormReadonly(readonly) {
+  [nameInput, matricNumber, courses].forEach((input) => {
+    input.readOnly = readonly;
+  });
+}
+
 function configureDashboardForRole() {
   const role = currentUser?.role || 'lecturer';
   const name = currentUser?.name || currentUser?.email || 'Dashboard';
@@ -140,16 +150,23 @@ function configureDashboardForRole() {
   listTitle.textContent = role === 'admin' ? 'All students' : role === 'lecturer' ? 'Students you added' : 'Your profile record';
 
   if (role === 'student') {
+    const hasProfile = allStudents.length > 0;
+    const updateLocked = studentProfileUpdateUsed();
+
     formKicker.textContent = 'Profile';
-    formTitle.textContent = allStudents.length ? 'Update your profile' : 'Create your profile';
+    formTitle.textContent = updateLocked ? 'Profile update locked' : hasProfile ? 'Update your profile once' : 'Create your profile';
     studentEmail.value = currentUser.email;
     studentEmail.readOnly = true;
-    saveBtn.textContent = allStudents.length ? 'Update profile' : 'Save profile';
+    saveBtn.textContent = updateLocked ? 'Profile update used' : hasProfile ? 'Update profile' : 'Save profile';
+    saveBtn.disabled = updateLocked;
+    setStudentFormReadonly(updateLocked);
   } else {
     formKicker.textContent = editingId ? 'Edit record' : 'Add record';
     formTitle.textContent = editingId ? 'Update student' : 'Create student';
     studentEmail.readOnly = false;
     saveBtn.textContent = editingId ? 'Update student' : 'Save student';
+    saveBtn.disabled = false;
+    setStudentFormReadonly(false);
   }
 }
 
@@ -202,6 +219,7 @@ function render() {
   paginated.forEach((student) => {
     const row = document.createElement('tr');
     const canDelete = currentUser?.role === 'admin' || currentUser?.role === 'lecturer';
+    const canUnlock = canDelete && student.profileUpdateUsed;
 
     row.innerHTML = `
       <td><strong>${escapeHtml(student.name || '')}</strong></td>
@@ -212,12 +230,23 @@ function render() {
     `;
 
     const actions = row.querySelector('.row-actions');
+    const updateLocked = currentUser?.role === 'student' && student.profileUpdateUsed;
     const editBtn = document.createElement('button');
     editBtn.className = 'icon-btn';
     editBtn.type = 'button';
-    editBtn.textContent = 'Edit';
-    editBtn.onclick = () => editStudent(student);
+    editBtn.textContent = updateLocked ? 'Locked' : 'Edit';
+    editBtn.disabled = updateLocked;
+    if (!updateLocked) editBtn.onclick = () => editStudent(student);
     actions.appendChild(editBtn);
+
+    if (canUnlock) {
+      const unlockBtn = document.createElement('button');
+      unlockBtn.className = 'icon-btn success';
+      unlockBtn.type = 'button';
+      unlockBtn.textContent = 'Unlock update';
+      unlockBtn.onclick = () => unlockProfileUpdate(student._id);
+      actions.appendChild(unlockBtn);
+    }
 
     if (canDelete) {
       const deleteBtn = document.createElement('button');
@@ -279,6 +308,11 @@ async function saveStudent(event) {
 
   const role = currentUser?.role;
   const existingStudentProfile = role === 'student' && allStudents[0];
+  if (existingStudentProfile?.profileUpdateUsed) {
+    showMessage(studentError, 'You have already used your one allowed profile update.');
+    return;
+  }
+
   const targetId = editingId || existingStudentProfile?._id;
   const method = targetId ? 'PUT' : 'POST';
   const url = targetId ? `${API_URL}/${targetId}` : API_URL;
@@ -297,6 +331,21 @@ async function saveStudent(event) {
       body: JSON.stringify(body)
     });
     resetForm();
+    await getStudents();
+  } catch (error) {
+    showMessage(studentError, error.message);
+  }
+}
+
+async function unlockProfileUpdate(id) {
+  if (!confirm('Unlock one more profile update for this student?')) return;
+
+  try {
+    await apiRequest(`${API_URL}/${id}/unlock-profile-update`, {
+      method: 'POST',
+      headers: headers()
+    });
+    if (editingId === id) resetForm();
     await getStudents();
   } catch (error) {
     showMessage(studentError, error.message);

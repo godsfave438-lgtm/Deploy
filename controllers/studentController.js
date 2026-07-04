@@ -1,10 +1,11 @@
-﻿const Student = require('../models/studentModel');
+const Student = require('../models/studentModel');
 
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const isAdmin = (user) => user?.role === 'admin';
 const isLecturer = (user) => user?.role === 'lecturer';
 const isStudent = (user) => user?.role === 'student';
+const STUDENT_PROFILE_UPDATE_LIMIT_MESSAGE = 'You have already used your one allowed profile update';
 
 const ownsStudent = (req, student) => {
   if (!student || !req.user) return false;
@@ -115,6 +116,10 @@ const updateStudent = async (req, res) => {
       return res.status(403).json({ error: 'You can only update your own allowed student record' });
     }
 
+    if (isStudent(req.user) && student.profileUpdateUsed) {
+      return res.status(403).json({ error: STUDENT_PROFILE_UPDATE_LIMIT_MESSAGE });
+    }
+
     const payload = sanitizeStudentPayload(req.body);
     if (isStudent(req.user)) payload.email = req.user.email;
 
@@ -129,8 +134,24 @@ const updateStudent = async (req, res) => {
       return res.status(400).json({ error: 'Email or matric number already exists' });
     }
 
+    if (isStudent(req.user)) {
+      const updatedStudent = await Student.findOneAndUpdate(
+        { _id: req.params.id, profileUpdateUsed: { $ne: true } },
+        { $set: { ...payload, ownerUser: req.user.id, profileUpdateUsed: true } },
+        { new: true, runValidators: true }
+      );
+
+      if (!updatedStudent) {
+        return res.status(403).json({ error: STUDENT_PROFILE_UPDATE_LIMIT_MESSAGE });
+      }
+
+      return res.json({
+        message: 'Student profile updated. You cannot update it again',
+        student: updatedStudent
+      });
+    }
+
     Object.assign(student, payload);
-    if (isStudent(req.user)) student.ownerUser = req.user.id;
     await student.save();
 
     res.json({ message: 'Student fully updated', student });
@@ -146,6 +167,10 @@ const patchStudent = async (req, res) => {
 
     if (!isAdmin(req.user) && !ownsStudent(req, student)) {
       return res.status(403).json({ error: 'You can only update your own allowed student record' });
+    }
+
+    if (isStudent(req.user) && student.profileUpdateUsed) {
+      return res.status(403).json({ error: STUDENT_PROFILE_UPDATE_LIMIT_MESSAGE });
     }
 
     const updateData = {};
@@ -177,6 +202,10 @@ const patchStudent = async (req, res) => {
       updateData.courses = cleanedCourses;
     }
 
+    if (!Object.keys(updateData).length) {
+      return res.status(400).json({ error: 'No valid fields provided' });
+    }
+
     if (updateData.email || updateData.matricNumber) {
       const duplicate = await Student.findOne({
         $or: [
@@ -188,11 +217,56 @@ const patchStudent = async (req, res) => {
       if (duplicate) return res.status(400).json({ error: 'Email or matric number already exists' });
     }
 
+    if (isStudent(req.user)) {
+      const updatedStudent = await Student.findOneAndUpdate(
+        { _id: req.params.id, profileUpdateUsed: { $ne: true } },
+        { $set: { ...updateData, ownerUser: req.user.id, profileUpdateUsed: true } },
+        { new: true, runValidators: true }
+      );
+
+      if (!updatedStudent) {
+        return res.status(403).json({ error: STUDENT_PROFILE_UPDATE_LIMIT_MESSAGE });
+      }
+
+      return res.json({
+        message: 'Student profile updated. You cannot update it again',
+        student: updatedStudent
+      });
+    }
+
     Object.assign(student, updateData);
-    if (isStudent(req.user)) student.ownerUser = req.user.id;
     await student.save();
 
     res.json({ message: 'Student updated successfully', student });
+  } catch (err) {
+    res.status(400).json({ error: 'Invalid ID format' });
+  }
+};
+
+const unlockStudentProfileUpdate = async (req, res) => {
+  try {
+    if (!isAdmin(req.user) && !isLecturer(req.user)) {
+      return res.status(403).json({ error: 'Only admins and lecturers can unlock student profile updates' });
+    }
+
+    const student = await Student.findById(req.params.id);
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+
+    if (!isAdmin(req.user) && !ownsStudent(req, student)) {
+      return res.status(403).json({ error: 'You can only unlock student records you are allowed to manage' });
+    }
+
+    if (!student.profileUpdateUsed) {
+      return res.status(400).json({ error: 'This student already has an available profile update' });
+    }
+
+    student.profileUpdateUsed = false;
+    await student.save();
+
+    res.json({
+      message: 'Student profile update unlocked. The student can update it one more time',
+      student
+    });
   } catch (err) {
     res.status(400).json({ error: 'Invalid ID format' });
   }
@@ -220,5 +294,6 @@ module.exports = {
   createStudent,
   updateStudent,
   patchStudent,
+  unlockStudentProfileUpdate,
   deleteStudent,
 };

@@ -1,4 +1,4 @@
-﻿const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 const studentSchema = new mongoose.Schema(
   {
@@ -38,6 +38,11 @@ const studentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       default: null
+    },
+
+    profileUpdateUsed: {
+      type: Boolean,
+      default: false
     }
   },
   { timestamps: true }
